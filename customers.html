@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لیست مشتریان - سیستم تعمیرگاه</title>
+	<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="customers-page">
+    <div class="container">
+        <header>
+            <h1>📋 نرم افزار مدیریت تعمیرگاه لوازم خانگی چابک الکترونیک</h1>
+            <nav>
+                <a href="/" class="nav-link">📊 داشبورد</a>
+                <a href="/add-customer" class="nav-link">👤 ثبت دستگاه جدید</a>
+                <a href="/customers" class="nav-link active">📋 لیست مشتریان</a>
+                <a href="/reports" class="nav-link">📈 گزارش‌ها</a>
+                <a href="/import-export" class="nav-link">📤 ایمپورت/اکسپورت</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="customers-section">
+                <div class="section-header">
+                    <div class="header-icon">👥</div>
+                    <h2>مدیریت مشتریان</h2>
+                    <p>مشاهده، جستجو و مدیریت اطلاعات مشتریان</p>
+                </div>
+
+                <!-- آمار سریع -->
+                <div class="quick-stats">
+                    <div class="stat-card mini">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <h3>کل مشتریان</h3>
+                            <span class="stat-number">{{ customers|length if customers else 0 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card mini">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3>درآمد کل</h3>
+                            <span class="stat-number" id="totalIncome">0 تومان</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card mini">
+                        <div class="stat-icon">🔄</div>
+                        <div class="stat-info">
+                            <h3>در حال تعمیر</h3>
+                            <span class="stat-number" id="activeRepairs">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جستجو و فیلتر -->
+                <div class="search-filter-section">
+                    <div class="search-box">
+                        <form method="GET" class="search-form">
+                            <div class="search-input-wrapper">
+                                <input type="text" name="search" class="search-input" 
+                                       placeholder="🔍 جستجو بر اساس نام، شماره تماس، کد وسیله یا نوع وسیله..." 
+                                       value="{{ request.args.get('search', '') }}">
+                                <button type="submit" class="btn btn-primary search-btn">
+                                    جستجو
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary" onclick="clearSearch()">
+                            🗑️ پاک کردن جستجو
+                        </button>
+                        <a href="/customers" class="btn btn-success">
+                            🔄 بارگذاری مجدد
+                        </a>
+                    </div>
+                </div>
+
+                <!-- جدول مشتریان -->
+                <div class="table-section">
+                    {% if customers %}
+                    <div class="table-header">
+                        <h3>📝 لیست مشتریان ({{ customers|length }} مورد)</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-info" onclick="exportToExcel()">
+                                📥 خروجی Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>ردیف</th>
+                                    <th>نام مشتری</th>
+                                    <th>📞 تماس</th>
+                                    <th>📅 ورود</th>
+                                    <th>📅 خروج</th>
+                                    <th>🏷️ کد وسیله</th>
+                                    <th>🔧 نوع وسیله</th>
+                                    <th>📝 وضعیت</th>
+                                    <th>⚙️ عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in customers %}
+                                <tr class="customer-row">
+                                    <td class="row-number">{{ loop.index }}</td>
+                                    <td class="customer-name">
+                                        <span class="name-link" onclick="showCustomerDetails({{ customer[0] }})">
+                                            👤 {{ customer[1] or 'نامشخص' }}
+                                        </span>
+                                    </td>
+                                    <td class="phone-number">
+                                        <span class="phone-badge">{{ customer[2] or '-' }}</span>
+                                    </td>
+                                    <td class="entry-date">
+                                        <span class="date-badge">{{ customer[3] or '-' }}</span>
+                                    </td>
+                                    <td class="exit-date">
+                                        {% if customer[4] %}
+                                            <span class="date-badge success">{{ customer[4] }}</span>
+                                        {% else %}
+                                            <span class="status-badge warning">🚫 تعیین نشده</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="device-code">
+                                        <span class="code-badge">{{ customer[5] or '-' }}</span>
+                                    </td>
+                                    <td class="device-type">
+                                        <span class="device-badge">{{ customer[6] or '-' }}</span>
+                                    </td>
+                                    
+                                    <td class="status">
+                                        {% if customer[4] %}
+                                            <span class="status-badge completed">✅ تکمیل شده</span>
+                                        {% else %}
+                                            <span class="status-badge active">🔄 در حال تعمیر</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="actions">
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" onclick="editCustomer({{ customer[0] }})" 
+                                                    title="ویرایش مشتری">
+                                                ✏️ ویرایش
+                                            </button>
+                                            <button class="btn-delete" onclick="deleteCustomer({{ customer[0] }}, '{{ customer[1] }}')" 
+                                                    title="حذف مشتری">
+                                                🗑️ حذف
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- صفحه‌بندی -->
+                    <div class="pagination">
+                        <div class="pagination-info">
+                            نمایش {{ customers|length }} مورد از کل مشتریان
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <h3>هیچ مشتری‌ای یافت نشد</h3>
+                        <p>
+                            {% if request.args.get('search') %}
+                                نتیجه‌ای برای "{{ request.args.get('search') }}" پیدا نشد.
+                            {% else %}
+                                هنوز هیچ مشتری‌ای در سیستم ثبت نشده است.
+                            {% endif %}
+                        </p>
+                        <div class="empty-actions">
+                            <a href="/add-customer" class="btn btn-primary">
+                                ➕ ثبت اولین مشتری
+                            </a>
+                            {% if request.args.get('search') %}
+                                <button class="btn btn-secondary" onclick="clearSearch()">
+                                    🗑️ پاک کردن جستجو
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal برای نمایش اطلاعات مشتری -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 اطلاعات کامل مشتری</h2>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="customerDetails" class="customer-details">
+                    <!-- اطلاعات مشتری اینجا نمایش داده می‌شود -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal برای ویرایش مشتری -->
+    <div id="editModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header" style="background: #f39c12;">
+                <h2>✏️ ویرایش اطلاعات مشتری</h2>
+                <button class="close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" class="edit-form">
+                    <input type="hidden" id="editCustomerId" name="id">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editFullName">👤 نام مشتری:</label>
+                            <input type="text" id="editFullName" name="full_name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editPhoneNumber">📞 شماره تماس:</label>
+                            <input type="tel" id="editPhoneNumber" name="phone_number" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEntryDate">📅 تاریخ ورود:</label>
+                            <div class="date-input-wrapper">
+                                <input type="text" id="editEntryDate" name="entry_date" required 
+                                       class="date-input"
+                                       placeholder="1403/10/01"
+                                       readonly
+                                       onfocus="showPersianCalendar('editEntryDate')">
+                                <button type="button" class="datepicker-btn" onclick="showPersianCalendar('editEntryDate')">
+                                    📅
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editExitDate">📅 تاریخ خروج:</label>
+                            <div class="date-input-wrapper">
+                                <input type="text" id="editExitDate" name="exit_date" 
+                                       class="date-input"
+                                       placeholder="اختیاری - 1403/10/15"
+                                       readonly
+                                       onfocus="showPersianCalendar('editExitDate')">
+                                <button type="button" class="datepicker-btn" onclick="showPersianCalendar('editExitDate')">
+                                    📅
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editDeviceCode">🏷️ کد وسیله:</label>
+                            <input type="text" id="editDeviceCode" name="device_code" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editDeviceType">🔧 نوع وسیله:</label>
+                            <input type="text" id="editDeviceType" name="device_type" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editMaterialCost">💰 قیمت جنس (تومان):</label>
+                            <input type="number" id="editMaterialCost" name="material_cost" class="currency" value="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editServiceCost">💼 دستمزد خدمات (تومان):</label>
+                            <input type="number" id="editServiceCost" name="service_cost" class="currency" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="editDescription">📝 توضیحات:</label>
+                        <textarea id="editDescription" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-warning">
+                            💾 ذخیره تغییرات
+                        </button>
+                        <button type="button" onclick="closeEditModal()" class="btn btn-secondary">
+                            ❌ انصراف
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal برای تایید حذف -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header" style="background: #e74c3c;">
+                <h2>⚠️ تایید حذف</h2>
+                <button class="close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="deleteMessage" style="text-align: center; font-size: 16px; margin-bottom: 20px;">
+                    <!-- پیام حذف اینجا نمایش داده می‌شود -->
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="confirmDelete" class="btn btn-danger">بله، حذف کن</button>
+                    <button onclick="closeDeleteModal()" class="btn btn-secondary">انصراف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تقویم فارسی برای ویرایش -->
+    <div id="persianCalendar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📅 تقویم فارسی</h2>
+                <button class="close" onclick="hidePersianCalendar()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-controls">
+                    <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">‹ ماه قبل</button>
+                    <span id="calendarMonthYear" class="calendar-month">دی 1403</span>
+                    <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">ماه بعد ›</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div>ش</div>
+                    <div>ی</div>
+                    <div>د</div>
+                    <div>س</div>
+                    <div>چ</div>
+                    <div>پ</div>
+                    <div>ج</div>
+                </div>
+                <div id="calendarDays" class="calendar-days"></div>
+                <div class="calendar-actions">
+                    <button onclick="setCalendarToday()" class="btn btn-secondary">امروز</button>
+                    <button onclick="hidePersianCalendar()" class="btn btn-primary">بستن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // مدیریت Modal‌ها
+        const modal = document.getElementById('customerModal');
+        const editModal = document.getElementById('editModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const closeBtn = document.querySelector('.close');
+
+        let customerToDelete = null;
+
+        function openModal() {
+            modal.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function openEditModal() {
+            editModal.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeEditModal() {
+            editModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function openDeleteModal() {
+            deleteModal.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            customerToDelete = null;
+        }
+
+        closeBtn.onclick = closeModal;
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+            if (event.target == editModal) {
+                closeEditModal();
+            }
+            if (event.target == deleteModal) {
+                closeDeleteModal();
+            }
+        }
+
+        // بستن Modal با کلید ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                closeEditModal();
+                closeDeleteModal();
+            }
+        });
+
+        // نمایش اطلاعات مشتری
+        async function showCustomerDetails(customerId) {
+            try {
+                const response = await fetch(`/api/customer/${customerId}`);
+                const customer = await response.json();
+
+                if (customer.success) {
+                    displayCustomerDetails(customer.data);
+                    openModal();
+                } else {
+                    showAlert('خطا در دریافت اطلاعات مشتری', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('خطا در ارتباط با سرور', 'error');
+            }
+        }
+
+        // نمایش اطلاعات در Modal
+        function displayCustomerDetails(customer) {
+            const detailsContainer = document.getElementById('customerDetails');
+
+            const formatCurrency = (amount) => {
+                if (!amount) return '۰ تومان';
+                return new Intl.NumberFormat('fa-IR').format(amount) + ' تومان';
+            };
+
+            const formatDate = (date) => {
+                return date || '-';
+            };
+
+            detailsContainer.innerHTML = `
+                <div class="detail-group">
+                    <span class="detail-label">👤 نام مشتری:</span>
+                    <div class="detail-value">${customer.full_name || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">📞 شماره تماس:</span>
+                    <div class="detail-value">${customer.phone_number || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">📅 تاریخ ورود:</span>
+                    <div class="detail-value">${formatDate(customer.entry_date)}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">📅 تاریخ خروج:</span>
+                    <div class="detail-value ${!customer.exit_date ? 'empty' : ''}">
+                        ${formatDate(customer.exit_date) || 'تعیین نشده'}
+                    </div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">🏷️ کد وسیله:</span>
+                    <div class="detail-value">${customer.device_code || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">🔧 نوع وسیله:</span>
+                    <div class="detail-value">${customer.device_type || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">💰 قیمت جنس:</span>
+                    <div class="detail-value">${formatCurrency(customer.material_cost)}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">💼 دستمزد خدمات:</span>
+                    <div class="detail-value">${formatCurrency(customer.service_cost)}</div>
+                </div>
+                
+                <div class="detail-group" style="grid-column: 1 / -1;">
+                    <span class="detail-label">💵 مجموع هزینه:</span>
+                    <div class="detail-value" style="background: #e8f5e8; color: #2d5016; font-weight: bold;">
+                        ${formatCurrency(customer.total_cost)}
+                    </div>
+                </div>
+                
+                <div class="detail-group" style="grid-column: 1 / -1;">
+                    <span class="detail-label">📝 توضیحات:</span>
+                    <div class="detail-value ${!customer.description ? 'empty' : ''}" style="min-height: 60px;">
+                        ${customer.description || 'توضیحاتی ثبت نشده است'}
+                    </div>
+                </div>
+                
+                <div class="detail-group" style="grid-column: 1 / -1;">
+                    <span class="detail-label">🕒 تاریخ ثبت:</span>
+                    <div class="detail-value">${formatDate(customer.created_at)}</div>
+                </div>
+                
+                <div class="detail-group" style="grid-column: 1 / -1; text-align: center; margin-top: 20px;">
+                    <div class="action-buttons">
+                        <button class="btn-edit" onclick="editCustomer(${customer.id})" style="font-size: 16px; padding: 10px 20px;">
+                            ✏️ ویرایش این مشتری
+                        </button>
+                        <button class="btn-delete" onclick="deleteCustomer(${customer.id}, '${customer.full_name}')" style="font-size: 16px; padding: 10px 20px;">
+                            🗑️ حذف این مشتری
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ویرایش مشتری
+        async function editCustomer(customerId) {
+            try {
+                const response = await fetch(`/api/customer/${customerId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    fillEditForm(result.data);
+                    openEditModal();
+                } else {
+                    showAlert('خطا در دریافت اطلاعات مشتری برای ویرایش', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('خطا در ارتباط با سرور', 'error');
+            }
+        }
+
+        // پر کردن فرم ویرایش
+        function fillEditForm(customer) {
+            document.getElementById('editCustomerId').value = customer.id;
+            document.getElementById('editFullName').value = customer.full_name || '';
+            document.getElementById('editPhoneNumber').value = customer.phone_number || '';
+            document.getElementById('editEntryDate').value = customer.entry_date || '';
+            document.getElementById('editExitDate').value = customer.exit_date || '';
+            document.getElementById('editDeviceCode').value = customer.device_code || '';
+            document.getElementById('editDeviceType').value = customer.device_type || '';
+            document.getElementById('editMaterialCost').value = customer.material_cost || 0;
+            document.getElementById('editServiceCost').value = customer.service_cost || 0;
+            document.getElementById('editDescription').value = customer.description || '';
+        }
+
+        // ارسال فرم ویرایش
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.textContent = 'در حال ذخیره...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/update-customer', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('✅ اطلاعات مشتری با موفقیت به‌روزرسانی شد', 'success');
+                    closeEditModal();
+                    // رفرش صفحه بعد از 1 ثانیه
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showAlert('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ خطا در ارتباط با سرور', 'error');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // حذف مشتری
+        function deleteCustomer(customerId, customerName) {
+            customerToDelete = customerId;
+            const deleteMessage = document.getElementById('deleteMessage');
+            deleteMessage.innerHTML = `
+                <p>آیا از حذف مشتری زیر مطمئن هستید؟</p>
+                <p style="font-weight: bold; color: #e74c3c; margin: 10px 0;">${customerName}</p>
+                <p style="color: #666; font-size: 14px;">این عمل غیرقابل بازگشت است!</p>
+            `;
+            
+            const confirmBtn = document.getElementById('confirmDelete');
+            confirmBtn.onclick = confirmDelete;
+            
+            openDeleteModal();
+        }
+
+        async function confirmDelete() {
+            if (!customerToDelete) return;
+            
+            try {
+                const response = await fetch(`/api/delete-customer/${customerToDelete}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ مشتری با موفقیت حذف شد', 'success');
+                    closeDeleteModal();
+                    // رفرش صفحه بعد از 1 ثانیه
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showAlert('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ خطا در ارتباط با سرور', 'error');
+            }
+        }
+
+        // پاک کردن جستجو
+        function clearSearch() {
+            window.location.href = '/customers';
+        }
+
+        // خروجی Excel
+        function exportToExcel() {
+            window.open('/api/export-excel', '_blank');
+        }
+
+        // نمایش پیام
+        function showAlert(message, type) {
+            const existingAlerts = document.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `custom-alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <div class="alert-content">
+                    <span class="alert-icon">${type === 'success' ? '✅' : '❌'}</span>
+                    <span class="alert-message">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // محاسبه آمار
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateStats();
+            
+            // جستجوی خودکار
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        if (this.value.length >= 2 || this.value.length === 0) {
+                            this.closest('form').submit();
+                        }
+                    }, 500);
+                });
+            }
+        });
+
+        function calculateStats() {
+            const customers = {{ customers|tojson|safe }};
+            let totalIncome = 0;
+            let activeRepairs = 0;
+            
+            customers.forEach(customer => {
+                if (customer[9] && customer[9] !== '') {
+                    totalIncome += parseInt(customer[9]) || 0;
+                }
+                if (!customer[4]) {
+                    activeRepairs++;
+                }
+            });
+            
+            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+            document.getElementById('activeRepairs').textContent = activeRepairs;
+        }
+
+        function formatCurrency(number) {
+            if (!number) return '۰ تومان';
+            return new Intl.NumberFormat('fa-IR').format(number) + ' تومان';
+        }
+
+        // متغیرهای تقویم فارسی
+        let currentDateField = null;
+        let calendarYear, calendarMonth, calendarDay;
+        const persianMonths = [
+            'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+            'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+        ];
+
+        // الگوریتم دقیق تبدیل میلادی به شمسی
+        function gregorianToJalali(gy, gm, gd) {
+            let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            let jy = (gy <= 1600) ? 0 : 979;
+            gy -= (gy <= 1600) ? 621 : 1600;
+            let gy2 = (gm > 2) ? (gy + 1) : gy;
+            let days = (365 * gy) + (parseInt((gy2 + 3) / 4)) - (parseInt((gy2 + 99) / 100)) 
+                     + (parseInt((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+            jy += 33 * (parseInt(days / 12053));
+            days %= 12053;
+            jy += 4 * (parseInt(days / 1461));
+            days %= 1461;
+            jy += parseInt((days - 1) / 365);
+            if (days > 365) days = (days - 1) % 365;
+            let jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+            let jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+            return [jy, jm, jd];
+        }
+
+        // گرفتن تاریخ امروز به شمسی
+        function getTodayJalali() {
+            const today = new Date();
+            const [jy, jm, jd] = gregorianToJalali(
+                today.getFullYear(), 
+                today.getMonth() + 1, 
+                today.getDate()
+            );
+            return { year: jy, month: jm, day: jd };
+        }
+
+        // نمایش تقویم فارسی
+        function showPersianCalendar(fieldId) {
+            currentDateField = fieldId;
+            
+            // تنظیم تاریخ فعلی
+            const today = getTodayJalali();
+            calendarYear = today.year;
+            calendarMonth = today.month;
+            calendarDay = today.day;
+            
+            // اگر فیلد مقدار دارد، از آن استفاده کن
+            const currentValue = document.getElementById(fieldId).value;
+            if (currentValue) {
+                const parts = currentValue.split('/');
+                if (parts.length === 3) {
+                    calendarYear = parseInt(parts[0]);
+                    calendarMonth = parseInt(parts[1]);
+                    calendarDay = parseInt(parts[2]);
+                }
+            }
+            
+            renderPersianCalendar();
+            document.getElementById('persianCalendar').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function hidePersianCalendar() {
+            document.getElementById('persianCalendar').style.display = 'none';
+            document.body.classList.remove('modal-open');
+            currentDateField = null;
+        }
+
+        function changeCalendarMonth(direction) {
+            calendarMonth += direction;
+            if (calendarMonth > 12) {
+                calendarMonth = 1;
+                calendarYear++;
+            } else if (calendarMonth < 1) {
+                calendarMonth = 12;
+                calendarYear--;
+            }
+            renderPersianCalendar();
+        }
+
+        function renderPersianCalendar() {
+            const monthYearElement = document.getElementById('calendarMonthYear');
+            const daysElement = document.getElementById('calendarDays');
+            
+            monthYearElement.textContent = `${persianMonths[calendarMonth - 1]} ${calendarYear}`;
+            daysElement.innerHTML = '';
+            
+            // محاسبه روزهای ماه
+            const daysInMonth = (calendarMonth <= 6) ? 31 : 30;
+            const actualDaysInMonth = (calendarMonth === 12 && !isLeapYear(calendarYear)) ? 29 : daysInMonth;
+            
+            // محاسبه روز اول ماه
+            const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
+            const today = getTodayJalali();
+            
+            // خانه‌های خالی قبل از روز اول
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                daysElement.appendChild(emptyDay);
+            }
+            
+            // روزهای ماه
+            for (let day = 1; day <= actualDaysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                dayElement.onclick = function() {
+                    selectCalendarDate(day);
+                };
+                
+                // بررسی آیا امروز است
+                if (calendarYear === today.year && calendarMonth === today.month && day === today.day) {
+                    dayElement.classList.add('today');
+                }
+                
+                // بررسی آیا روز انتخاب شده است
+                if (calendarDay === day) {
+                    dayElement.classList.add('selected');
+                }
+                
+                daysElement.appendChild(dayElement);
+            }
+        }
+
+        // بررسی سال کبیسه
+        function isLeapYear(jy) {
+            const remains = [1, 5, 9, 13, 17, 22, 26, 30];
+            return remains.includes(jy % 33);
+        }
+
+        // محاسبه روز اول ماه
+        function getFirstDayOfMonth(jy, jm) {
+            // محاسبه ساده - در واقعیت نیاز به الگوریتم دقیق‌تری دارد
+            return (jm * 2) % 7;
+        }
+
+        function selectCalendarDate(day) {
+            calendarDay = day;
+            const selectedDate = `${calendarYear}/${calendarMonth.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}`;
+            document.getElementById(currentDateField).value = selectedDate;
+            hidePersianCalendar();
+        }
+
+        function setCalendarToday() {
+            const today = getTodayJalali();
+            calendarYear = today.year;
+            calendarMonth = today.month;
+            calendarDay = today.day;
+            selectCalendarDate(calendarDay);
+        }
+
+        // بستن modal با کلیک خارج
+        window.onclick = function(event) {
+            const modal = document.getElementById('persianCalendar');
+            if (event.target == modal) {
+                hidePersianCalendar();
+            }
+        }
+
+        // بستن با کلید ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hidePersianCalendar();
+            }
+        });
+    </script>
+</body>
+<!-- فوتر ساده - کد این قسمت را در انتهای body همه صفحات قرار دهید -->
+<footer class="simple-footer">
+    <div class="footer-content">
+        <div class="footer-text">
+            <span class="version">نسخه ۱.۰ - مخصوص استفاده محلی</span>
+            <span class="separator">|</span>
+            <span class="developer">
+                برنامه نویس: 
+                <a href="mailto:m.vahdatfar@gmail.com" class="developer-link">
+                    محمود وحدت فر
+                </a>
+            </span>
+        </div>
+    </div>
+</footer>
+</html>

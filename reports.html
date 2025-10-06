@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارش‌های پیشرفته - سیستم تعمیرگاه</title>
+	<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📈 نرم افزار مدیریت تعمیرگاه لوازم خانگی چابک الکترونیک</h1>
+            <nav>
+                <a href="/" class="nav-link">📊 داشبورد</a>
+                <a href="/add-customer" class="nav-link">👤 ثبت دستگاه جدید</a>
+                <a href="/customers" class="nav-link">📋 لیست مشتریان</a>
+                <a href="/reports" class="nav-link active">📈 گزارش‌ها</a>
+                <a href="/import-export" class="nav-link">📤 ایمپورت/اکسپورت</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="reports-section">
+                <div class="section-header">
+                    <div class="header-icon">📊</div>
+                    <h2>گزارش‌های پیشرفته</h2>
+                    <p>تحلیل و گزارش‌گیری از داده‌های تعمیرگاه بر اساس تاریخ خروج</p>
+                </div>
+
+                <!-- گزارش درآمد در بازه زمانی -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">💰</div>
+                        <h3>گزارش درآمد در بازه زمانی</h3>
+                    </div>
+                    <div class="report-body">
+                        <form id="dateRangeForm" class="date-range-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="start_date" class="form-label">
+                                        <span class="label-icon">📅</span>
+                                        تاریخ شروع
+                                    </label>
+                                    <div class="date-input-wrapper">
+                                        <input type="text" id="start_date" name="start_date" required 
+                                               class="date-input"
+                                               placeholder="1403/10/01"
+                                               readonly
+                                               onfocus="showPersianCalendar('start_date')">
+                                        <button type="button" class="datepicker-btn" onclick="showPersianCalendar('start_date')">
+                                            📅
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="end_date" class="form-label">
+                                        <span class="label-icon">📅</span>
+                                        تاریخ پایان
+                                    </label>
+                                    <div class="date-input-wrapper">
+                                        <input type="text" id="end_date" name="end_date" required 
+                                               class="date-input"
+                                               placeholder="1403/10/30"
+                                               readonly
+                                               onfocus="showPersianCalendar('end_date')">
+                                        <button type="button" class="datepicker-btn" onclick="showPersianCalendar('end_date')">
+                                            📅
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-large">
+                                <span class="btn-icon">📈</span>
+                                محاسبه گزارش
+                            </button>
+                        </form>
+
+                        <div id="reportResult" class="report-result">
+                            <div class="result-header">
+                                <h4>📋 نتایج گزارش</h4>
+                                <span id="reportDateRange" class="date-range-badge"></span>
+                            </div>
+                            <div class="stats-grid">
+                                <div class="stat-card primary">
+                                    <div class="stat-icon">👥</div>
+                                    <div class="stat-info">
+                                        <h3>تعداد مشتریان</h3>
+                                        <span class="stat-number" id="reportCustomerCount">0</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-card success">
+                                    <div class="stat-icon">💰</div>
+                                    <div class="stat-info">
+                                        <h3>درآمد کل</h3>
+                                        <span class="stat-number" id="reportTotalIncome">0 تومان</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-card warning">
+                                    <div class="stat-icon">📊</div>
+                                    <div class="stat-info">
+                                        <h3>میانگین هر تعمیر</h3>
+                                        <span class="stat-number" id="reportAverageIncome">0 تومان</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- گزارش‌های سریع -->
+                <div class="quick-reports">
+                    <div class="report-header">
+                        <h3>📋 گزارش‌های سریع</h3>
+                    </div>
+                    <div class="quick-report-cards">
+                        <div class="quick-report-card" onclick="generateQuickReport('today')">
+                            <div class="report-icon">📅</div>
+                            <h4>امروز</h4>
+                            <p>گزارش درآمد امروز</p>
+                        </div>
+                        
+                        <div class="quick-report-card" onclick="generateQuickReport('week')">
+                            <div class="report-icon">📅</div>
+                            <h4>هفته جاری</h4>
+                            <p>گزارش ۷ روز گذشته</p>
+                        </div>
+                        
+                        <div class="quick-report-card" onclick="generateQuickReport('month')">
+                            <div class="report-icon">📅</div>
+                            <h4>ماه جاری</h4>
+                            <p>گزارش ماه شمسی جاری</p>
+                        </div>
+                        
+                        <div class="quick-report-card" onclick="generateQuickReport('all')">
+                            <div class="report-icon">📊</div>
+                            <h4>همه زمان‌ها</h4>
+                            <p>گزارش کامل از ابتدا</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- تقویم فارسی -->
+    <div id="persianCalendar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📅 تقویم فارسی</h2>
+                <button class="close" onclick="hidePersianCalendar()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-controls">
+                    <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">‹ ماه قبل</button>
+                    <span id="calendarMonthYear" class="calendar-month">دی 1403</span>
+                    <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">ماه بعد ›</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div>ش</div>
+                    <div>ی</div>
+                    <div>د</div>
+                    <div>س</div>
+                    <div>چ</div>
+                    <div>پ</div>
+                    <div>ج</div>
+                </div>
+                <div id="calendarDays" class="calendar-days"></div>
+                <div class="calendar-actions">
+                    <button onclick="setCalendarToday()" class="btn btn-secondary">امروز</button>
+                    <button onclick="hidePersianCalendar()" class="btn btn-primary">بستن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+ <script>
+    // متغیرهای تقویم فارسی
+    let currentDateField = null;
+    let calendarYear, calendarMonth, calendarDay;
+    const persianMonths = [
+        'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+        'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+    ];
+
+    // الگوریتم دقیق تبدیل میلادی به شمسی
+    function gregorianToJalali(gy, gm, gd) {
+        let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        let jy = (gy <= 1600) ? 0 : 979;
+        gy -= (gy <= 1600) ? 621 : 1600;
+        let gy2 = (gm > 2) ? (gy + 1) : gy;
+        let days = (365 * gy) + (parseInt((gy2 + 3) / 4)) - (parseInt((gy2 + 99) / 100)) 
+                 + (parseInt((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+        jy += 33 * (parseInt(days / 12053));
+        days %= 12053;
+        jy += 4 * (parseInt(days / 1461));
+        days %= 1461;
+        jy += parseInt((days - 1) / 365);
+        if (days > 365) days = (days - 1) % 365;
+        let jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+        let jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+        return [jy, jm, jd];
+    }
+
+    // گرفتن تاریخ امروز به شمسی
+    function getTodayJalali() {
+        const today = new Date();
+        const [jy, jm, jd] = gregorianToJalali(
+            today.getFullYear(), 
+            today.getMonth() + 1, 
+            today.getDate()
+        );
+        return { year: jy, month: jm, day: jd };
+    }
+
+    // نمایش تقویم فارسی
+    function showPersianCalendar(fieldId) {
+        currentDateField = fieldId;
+        
+        // تنظیم تاریخ فعلی
+        const today = getTodayJalali();
+        calendarYear = today.year;
+        calendarMonth = today.month;
+        calendarDay = today.day;
+        
+        // اگر فیلد مقدار دارد، از آن استفاده کن
+        const currentValue = document.getElementById(fieldId).value;
+        if (currentValue) {
+            const parts = currentValue.split('/');
+            if (parts.length === 3) {
+                calendarYear = parseInt(parts[0]);
+                calendarMonth = parseInt(parts[1]);
+                calendarDay = parseInt(parts[2]);
+            }
+        }
+        
+        renderPersianCalendar();
+        document.getElementById('persianCalendar').style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
+
+    function hidePersianCalendar() {
+        document.getElementById('persianCalendar').style.display = 'none';
+        document.body.classList.remove('modal-open');
+        currentDateField = null;
+    }
+
+    function changeCalendarMonth(direction) {
+        calendarMonth += direction;
+        if (calendarMonth > 12) {
+            calendarMonth = 1;
+            calendarYear++;
+        } else if (calendarMonth < 1) {
+            calendarMonth = 12;
+            calendarYear--;
+        }
+        renderPersianCalendar();
+    }
+
+    function renderPersianCalendar() {
+        const monthYearElement = document.getElementById('calendarMonthYear');
+        const daysElement = document.getElementById('calendarDays');
+        
+        monthYearElement.textContent = `${persianMonths[calendarMonth - 1]} ${calendarYear}`;
+        daysElement.innerHTML = '';
+        
+        // محاسبه روزهای ماه
+        const daysInMonth = (calendarMonth <= 6) ? 31 : 30;
+        const actualDaysInMonth = (calendarMonth === 12 && !isLeapYear(calendarYear)) ? 29 : daysInMonth;
+        
+        // محاسبه روز اول ماه
+        const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
+        const today = getTodayJalali();
+        
+        // خانه‌های خالی قبل از روز اول
+        for (let i = 0; i < firstDay; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'calendar-day empty';
+            daysElement.appendChild(emptyDay);
+        }
+        
+        // روزهای ماه
+        for (let day = 1; day <= actualDaysInMonth; day++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = day;
+            dayElement.onclick = function() {
+                selectCalendarDate(day);
+            };
+            
+            // بررسی آیا امروز است
+            if (calendarYear === today.year && calendarMonth === today.month && day === today.day) {
+                dayElement.classList.add('today');
+            }
+            
+            // بررسی آیا روز انتخاب شده است
+            if (calendarDay === day) {
+                dayElement.classList.add('selected');
+            }
+            
+            daysElement.appendChild(dayElement);
+        }
+    }
+
+    // بررسی سال کبیسه
+    function isLeapYear(jy) {
+        const remains = [1, 5, 9, 13, 17, 22, 26, 30];
+        return remains.includes(jy % 33);
+    }
+
+    // محاسبه روز اول ماه
+    function getFirstDayOfMonth(jy, jm) {
+        // محاسبه ساده - در واقعیت نیاز به الگوریتم دقیق‌تری دارد
+        return (jm * 2) % 7;
+    }
+
+    function selectCalendarDate(day) {
+        calendarDay = day;
+        const selectedDate = `${calendarYear}/${calendarMonth.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}`;
+        document.getElementById(currentDateField).value = selectedDate;
+        hidePersianCalendar();
+    }
+
+    function setCalendarToday() {
+        const today = getTodayJalali();
+        calendarYear = today.year;
+        calendarMonth = today.month;
+        calendarDay = today.day;
+        selectCalendarDate(calendarDay);
+    }
+
+    // تابع جدید: بارگذاری خودکار گزارش‌های سریع
+    async function loadQuickReports() {
+        const types = ['today', 'week', 'month', 'all'];
+        
+        for (let type of types) {
+            await generateQuickReport(type, true); // true یعنی فقط محاسبه کن و نمایش نده
+        }
+    }
+
+    // تابع اصلی گزارش‌های سریع - اصلاح شده
+    async function generateQuickReport(type, autoLoad = false) {
+        let startDate, endDate;
+        const today = getTodayJalali();
+        const todayString = `${today.year}/${today.month.toString().padStart(2, '0')}/${today.day.toString().padStart(2, '0')}`;
+        
+        switch(type) {
+            case 'today':
+                startDate = endDate = todayString;
+                break;
+            case 'week':
+                // محاسبه 7 روز قبل
+                const weekAgoDate = new Date();
+                weekAgoDate.setDate(weekAgoDate.getDate() - 7);
+                const weekAgo = gregorianToJalali(
+                    weekAgoDate.getFullYear(),
+                    weekAgoDate.getMonth() + 1,
+                    weekAgoDate.getDate()
+                );
+                startDate = `${weekAgo[0]}/${weekAgo[1].toString().padStart(2, '0')}/${weekAgo[2].toString().padStart(2, '0')}`;
+                endDate = todayString;
+                break;
+            case 'month':
+                startDate = `${today.year}/${today.month.toString().padStart(2, '0')}/01`;
+                endDate = todayString;
+                break;
+            case 'all':
+                startDate = '1400/01/01';
+                endDate = todayString;
+                break;
+        }
+        
+        // اگر autoLoad باشد، فقط محاسبه کن و نمایش نده
+        if (autoLoad) {
+            await calculateAndDisplayQuickStats(type, startDate, endDate);
+            return;
+        }
+        
+        // پر کردن فرم با تاریخ‌های انتخاب شده
+        document.getElementById('start_date').value = startDate;
+        document.getElementById('end_date').value = endDate;
+        
+        // ارسال خودکار فرم و نمایش نتایج
+        await submitReportRequest();
+    }
+
+    // تابع جدید: محاسبه و نمایش آمار گزارش سریع
+    async function calculateAndDisplayQuickStats(type, startDate, endDate) {
+        try {
+            const response = await fetch('/api/income-by-date', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // نمایش آمار در کارت مربوطه
+                const card = document.querySelector(`.quick-report-card:nth-child(${getCardIndex(type)})`);
+                if (card) {
+                    const statsElement = card.querySelector('.quick-stats') || createStatsElement(card);
+                    statsElement.innerHTML = `
+                        <div style="font-size: 12px; color: #27ae60; margin-top: 8px;">
+                            <strong>${result.customer_count}</strong> مشتری | 
+                            <strong>${formatCurrencyShort(result.total_income)}</strong>
+                        </div>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading quick report:', error);
+        }
+    }
+
+    // تابع کمکی: پیدا کردن ایندکس کارت
+    function getCardIndex(type) {
+        const types = ['today', 'week', 'month', 'all'];
+        return types.indexOf(type) + 1;
+    }
+
+    // تابع کمکی: ایجاد المان آمار اگر وجود ندارد
+    function createStatsElement(card) {
+        const statsElement = document.createElement('div');
+        statsElement.className = 'quick-stats';
+        card.appendChild(statsElement);
+        return statsElement;
+    }
+
+    // تابع کمکی: فرمت کوتاه ارز
+    function formatCurrencyShort(number) {
+        if (!number) return '۰ تومان';
+        return new Intl.NumberFormat('fa-IR').format(number) + ' تومان';
+    }
+
+    // تابع ارسال درخواست گزارش
+    async function submitReportRequest() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        
+        if (!startDate || !endDate) {
+            showAlert('لطفاً هر دو تاریخ را انتخاب کنید', 'error');
+            return;
+        }
+
+        const submitBtn = document.querySelector('#dateRangeForm button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<span class="btn-icon">⏳</span> در حال محاسبه...';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/income-by-date', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                displayReportResult(result);
+                showAlert('گزارش با موفقیت محاسبه شد', 'success');
+            } else {
+                showAlert(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('خطا در ارتباط با سرور', 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    // بقیه توابع...
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateRangeForm = document.getElementById('dateRangeForm');
+        
+        dateRangeForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitReportRequest();
+        });
+
+        // بارگذاری خودکار گزارش‌های سریع هنگام لود صفحه
+        loadQuickReports();
+
+        // تنظیم تاریخ‌های پیش‌فرض
+        setDefaultDates();
+    });
+
+    function displayReportResult(result) {
+        const reportResult = document.getElementById('reportResult');
+        reportResult.style.display = 'block';
+        
+        document.getElementById('reportCustomerCount').textContent = result.customer_count;
+        document.getElementById('reportTotalIncome').textContent = formatCurrency(result.total_income);
+        document.getElementById('reportAverageIncome').textContent = formatCurrency(
+            result.customer_count > 0 ? Math.round(result.total_income / result.customer_count) : 0
+        );
+        document.getElementById('reportDateRange').textContent = 
+            `${result.start_date} تا ${result.end_date}`;
+    }
+
+    function setDefaultDates() {
+        const today = getTodayJalali();
+        const monthAgoDate = new Date();
+        monthAgoDate.setDate(monthAgoDate.getDate() - 30);
+        const monthAgo = gregorianToJalali(
+            monthAgoDate.getFullYear(),
+            monthAgoDate.getMonth() + 1,
+            monthAgoDate.getDate()
+        );
+        
+        document.getElementById('start_date').value = 
+            `${monthAgo[0]}/${monthAgo[1].toString().padStart(2, '0')}/${monthAgo[2].toString().padStart(2, '0')}`;
+        document.getElementById('end_date').value = 
+            `${today.year}/${today.month.toString().padStart(2, '0')}/${today.day.toString().padStart(2, '0')}`;
+    }
+
+    function formatCurrency(number) {
+        if (!number) return '۰ تومان';
+        return new Intl.NumberFormat('fa-IR').format(number) + ' تومان';
+    }
+
+    function showAlert(message, type) {
+        const existingAlerts = document.querySelectorAll('.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `custom-alert alert-${type}`;
+        alertDiv.innerHTML = `
+            <div class="alert-content">
+                <span class="alert-icon">${type === 'success' ? '✅' : '❌'}</span>
+                <span class="alert-message">${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // بستن modal با کلیک خارج
+    window.onclick = function(event) {
+        const modal = document.getElementById('persianCalendar');
+        if (event.target == modal) {
+            hidePersianCalendar();
+        }
+    }
+
+    // بستن با کلید ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            hidePersianCalendar();
+        }
+    });
+</script>
+</body>
+<!-- فوتر ساده - کد این قسمت را در انتهای body همه صفحات قرار دهید -->
+<footer class="simple-footer">
+    <div class="footer-content">
+        <div class="footer-text">
+            <span class="version">نسخه ۱.۰ - مخصوص استفاده محلی</span>
+            <span class="separator">|</span>
+            <span class="developer">
+                برنامه نویس: 
+                <a href="mailto:m.vahdatfar@gmail.com" class="developer-link">
+                    محمود وحدت فر
+                </a>
+            </span>
+        </div>
+    </div>
+</footer>
+</html>
