@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>راهنمای نصب سیستم مدیریت تعمیرگاه</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'B Nazanin', 'Tahoma', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+        
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        h2 {
+            border-right: 4px solid #3498db;
+            padding-right: 10px;
+            font-size: 22px;
+        }
+        
+        h3 {
+            font-size: 18px;
+            color: #2980b9;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            right: -15px;
+            top: -15px;
+            font-weight: bold;
+        }
+        
+        code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: block;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            direction: ltr;
+            text-align: left;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .warning {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: right;
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #bdc3c7;
+            color: #7f8c8d;
+        }
+        
+        .print-btn {
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        
+        @media print {
+            .print-btn {
+                display: none;
+            }
+            
+            .step {
+                break-inside: avoid;
+            }
+            
+            h1, h2, h3 {
+                break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">🖨️ چاپ راهنما</button>
+
+    <div class="header">
+        <div class="logo">نرم افزار مدیریت تعمیرگاه لوازم خانگی چابک الکترونیک چابک الکترونیک چابک الکترونیک</div>
+        <h1>📚 راهنمای کامل نصب و راه‌اندازی</h1>
+        <p>نسخه ۱.۰ - مخصوص استفاده محلی</p>
+		<p>برنامه نویس : محمود وحدت فر</p>
+    </div>
+
+    <div class="note">
+        <strong>💡 نکته:</strong> این راهنما برای کاربران غیرفنی طراحی شده است. تمام مراحل به صورت کامل توضیح داده شده‌اند.
+    </div>
+
+    <h2>🎯 فهرست مطالب</h2>
+    <ul>
+        <li><a href="#section1">معرفی سیستم</a></li>
+        <li><a href="#section2">پیش‌نیازها</a></li>
+        <li><a href="#section3">نصب قدم به قدم</a></li>
+        <li><a href="#section4">راهنمای استفاده</a></li>
+        <li><a href="#section5">عیب‌یابی</a></li>
+        <li><a href="#section6">پشتیبان‌گیری</a></li>
+    </ul>
+
+    <h2 id="section1">🛠️ معرفی سیستم</h2>
+    
+    <h3>ویژگی‌های اصلی</h3>
+    <ul>
+        <li>✅ ثبت و مدیریت اطلاعات مشتریان</li>
+        <li>✅ پیگیری تعمیرات و دستگاه‌ها</li>
+        <li>✅ جستجوی پیشرفته در بین مشتریان</li>
+        <li>✅ گزارش‌گیری مالی و زمانی</li>
+        <li>✅ ایمپورت/اکسپورت از/به فایل اکسل</li>
+        <li>✅ نمایش پاپ آپ اطلاعات مشتری</li>
+        <li>✅ رابط کاربری فارسی و ریسپانسیو</li>
+    </ul>
+
+    <h2 id="section2">📋 پیش‌نیازها</h2>
+    
+    <div class="step">
+        <div class="step-number">۱</div>
+        <h3>سیستم عامل</h3>
+        <p>ویندوز ۱۰ یا بالاتر، مک‌اواس، یا لینوکس</p>
+    </div>
+
+    <div class="step">
+        <div class="step-number">۲</div>
+        <h3>پایتون</h3>
+        <p>نسخه ۳.۸ یا بالاتر</p>
+        <code>python --version</code>
+        <p>اگر خطا داد، پایتون نصب نیست.</p>
+    </div>
+
+    <div class="step">
+        <div class="step-number">۳</div>
+        <h3>مرورگر اینترنت</h3>
+        <p>Chrome, Firefox, Edge یا Safari</p>
+    </div>
+
+    <h2 id="section3">🔧 نصب قدم به قدم</h2>
+
+    <div class="step">
+        <div class="step-number">۱</div>
+        <h3>آماده‌سازی فایل‌ها</h3>
+        <p>تمام فایل‌های پروژه را در یک پوشه قرار دهید:</p>
+        <code>
+            repair_shop_system/<br>
+            ├── app.py<br>
+            ├── templates/<br>
+            ├── static/<br>
+            └── ...
+        </code>
+    </div>
+
+    <div class="step">
+        <div class="step-number">۲</div>
+        <h3>باز کردن خط فرمان</h3>
+        <p><strong>ویندوز:</strong> کلید Win + R → تایپ cmd → Enter</p>
+        <p><strong>مک:</strong> Cmd + Space → تایپ terminal → Enter</p>
+    </div>
+
+    <div class="step">
+        <div class="step-number">۳</div>
+        <h3>رفتن به پوشه پروژه</h3>
+        <code>cd path/to/repair_shop_system</code>
+        <p>مثال:</p>
+        <code>cd C:\Users\YourName\Downloads\repair_shop_system</code>
+    </div>
+
+    <div class="step">
+        <div class="step-number">۴</div>
+        <h3>نصب کتابخانه‌های مورد نیاز</h3>
+        <code>pip install flask pandas openpyxl</code>
+        
+        <div class="note">
+            <strong>توجه:</strong> اگر خطا داد، ممکن است نیاز باشد از دستور زیر استفاده کنید:
+            <code>pip install --user flask pandas openpyxl</code>
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-number">۵</div>
+        <h3>اجرای سیستم</h3>
+        <code>python app.py</code>
+        
+        <div class="success">
+            <strong>خروجی موفق:</strong><br>
+            🚀 در حال راه‌اندازی سیستم مدیریت تعمیرگاه...<br>
+            📁 مسیر دیتابیس: ...\data\repair_shop.db<br>
+            ✅ دیتابیس با موفقیت ایجاد شد<br>
+            🌐 سیستم آماده است!<br>
+            📊 آدرس: http://localhost:5000<br>
+            ⏹️ برای توقف، Ctrl+C را فشار دهید
+        </div>
+    </div>
+
+    <div class="step">
+        <div class="step-number">۶</div>
+        <h3>دسترسی به سیستم</h3>
+        <p>مرورگر خود را باز کرده و به آدرس زیر بروید:</p>
+        <code>http://localhost:5000</code>
+    </div>
+
+    <h2 id="section4">📊 راهنمای استفاده</h2>
+
+    <h3>صفحه اصلی (داشبورد)</h3>
+    <ul>
+        <li>مشاهده آمار کلی سیستم</li>
+        <li>دسترسی سریع به بخش‌های مختلف</li>
+        <li>نمایش ۵ مشتری آخر</li>
+    </ul>
+
+    <h3> ثبت دستگاه جدید</h3>
+    <ol>
+        <li>روی " ثبت دستگاه جدید" کلیک کنید</li>
+        <li>فرم را کامل پر کنید</li>
+        <li>روی "ثبت اطلاعات" کلیک کنید</li>
+    </ol>
+
+    <table>
+        <thead>
+            <tr>
+                <th>فیلد</th>
+                <th>توضیح</th>
+                <th>اجباری</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>نام مشتری</td>
+                <td>نام و نام خانوادگی مشتری</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td>شماره تماس</td>
+                <td>شماره موبایل مشتری</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td>تاریخ ورود</td>
+                <td>تاریخ تحویل دستگاه (مثال: 1403/10/15)</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td>کد وسیله</td>
+                <td>کد اختصاصی برای دستگاه</td>
+                <td>✅</td>
+            </tr>
+            <tr>
+                <td>نوع وسیله</td>
+                <td>مثال: اتو، جاروبرقی، سشوار...</td>
+                <td>✅</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>مدیریت مشتریان</h3>
+    <ul>
+        <li>مشاهده لیست تمام مشتریان</li>
+        <li>جستجو بر اساس نام، شماره تماس یا کد وسیله</li>
+        <li>کلیک روی نام مشتری برای مشاهده اطلاعات کامل</li>
+    </ul>
+
+    <h3>گزارش‌گیری</h3>
+    <ul>
+        <li>محاسبه درآمد در بازه زمانی مشخص</li>
+        <li>دریافت گزارش بر اساس تاریخ ورود</li>
+        <li>خروجی اکسل از تمام داده‌ها</li>
+    </ul>
+
+    <h2 id="section5">🔧 عیب‌یابی</h2>
+
+    <div class="warning">
+        <h3>مشکل: "python not found"</h3>
+        <p><strong>راه حل:</strong> پایتون نصب نیست یا به PATH اضافه نشده است.</p>
+        <ol>
+            <li>به سایت python.org بروید</li>
+            <li>نسخه ۳.۸ یا بالاتر دانلود کنید</li>
+            <li>هنگام نصب، گزینه "Add Python to PATH" را انتخاب کنید</li>
+        </ol>
+    </div>
+
+    <div class="warning">
+        <h3>مشکل: "No module named 'flask'"</h3>
+        <p><strong>راه حل:</strong> کتابخانه‌ها نصب نشده‌اند.</p>
+        <code>pip install --upgrade flask pandas openpyxl</code>
+    </div>
+
+    <div class="warning">
+        <h3>مشکل: سیستم اجرا می‌شود اما صفحه نمایش داده نمی‌شود</h3>
+        <p><strong>راه حل:</strong></p>
+        <ol>
+            <li>مطمئن شوید فایروال اجازه دسترسی می‌دهد</li>
+            <li>آدرس را بررسی کنید: http://localhost:5000</li>
+            <li>پورت 5000 را در مرورگر تست کنید</li>
+        </ol>
+    </div>
+
+    <div class="warning">
+        <h3>مشکل: خطا در ایمپورت فایل اکسل</h3>
+        <p><strong>راه حل:</strong></p>
+        <ul>
+            <li>فرمت فایل باید xlsx یا xls باشد</li>
+            <li>ساختار ستون‌ها باید مطابق نمونه باشد</li>
+        </ul>
+    </div>
+
+    <h2 id="section6">💾 پشتیبان‌گیری</h2>
+
+    <div class="note">
+        <h3>پشتیبان‌گیری از داده‌ها</h3>
+        <p>برای پشتیبان‌گیری، فایل زیر را کپی کنید:</p>
+        <code>data/repair_shop.db</code>
+        
+        <p>برای بازیابی، فایل پشتیبان را در همین مسیر قرار دهید.</p>
+    </div>
+
+    <div class="note">
+        <h3>پشتیبان‌گیری کامل</h3>
+        <p>کل پوشه پروژه را در محل امنی کپی کنید.</p>
+    </div>
+
+    <div class="footer">
+        <h3>📞 پشتیبانی</h3>
+        <p>در صورت بروز مشکل:</p>
+        <ol>
+            <li>پیام خطا را کپی کنید</li>
+            <li>به کنسول مرورگر (F12) بروید</li>
+            <li>از تصویر صفحه عکس بگیرید</li>
+            <li>با شماره 09355618035 تماس بگیرید</li>
+        </ol>
+        
+        <p style="margin-top: 30px;">
+            <strong>توسعه داده شده با ❤️ برای تعمیرگاه‌ لوازم خانگی چابک الکترونیک</strong><br>
+            نسخه ۱.۰ - ۱۴۰۳
+        </p>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">🖨️ چاپ راهنما</button>
+
+    <script>
+        // اضافه کردن قابلیت چاپ
+        document.addEventListener('DOMContentLoaded', function() {
+            // اضافه کردن تاریخ به صفحه
+            const today = new Date().toLocaleDateString('fa-IR');
+            const dateElement = document.createElement('div');
+            dateElement.style.textAlign = 'left';
+            dateElement.style.color = '#7f8c8d';
+            dateElement.style.marginBottom = '20px';
+            dateElement.innerHTML = `تاریخ تولید: ${today}`;
+            document.body.insertBefore(dateElement, document.body.firstChild);
+        });
+    </script>
+</body>
+</html>
