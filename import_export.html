@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ایمپورت/اکسپورت - سیستم تعمیرگاه</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📤 نرم افزار مدیریت تعمیرگاه لوازم خانگی چابک الکترونیک</h1>
+            <nav>
+                <a href="/" class="nav-link">📊 داشبورد</a>
+                <a href="/add-customer" class="nav-link">👤 ثبت دستگاه جدید</a>
+                <a href="/customers" class="nav-link">📋 لیست مشتریان</a>
+                <a href="/reports" class="nav-link">📈 گزارش‌ها</a>
+                <a href="/import-export" class="nav-link active">📤 ایمپورت/اکسپورت</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="import-export-section">
+                <div class="section-header">
+                    <div class="header-icon">📤</div>
+                    <h2>ایمپورت و اکسپورت داده‌ها</h2>
+                    <p>وارد کردن و خروجی گرفتن اطلاعات مشتریان از فایل اکسل</p>
+                </div>
+
+                <!-- کارت‌های عملیات -->
+                <div class="operation-cards">
+                    <!-- ایمپورت -->
+                    <div class="operation-card">
+                        <div class="card-header">
+                            <div class="card-icon">📥</div>
+                            <h3>ایمپورت از اکسل</h3>
+                        </div>
+                        
+                        <div class="card-description">
+                            اطلاعات مشتریان را از فایل اکسل وارد سیستم کنید. فرمت فایل باید xlsx یا xls باشد.
+                        </div>
+
+                        <form id="importForm" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="file" class="form-label">📁 انتخاب فایل اکسل:</label>
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="file" name="file" accept=".xlsx,.xls" required 
+                                           class="file-input" onchange="showFileInfo()">
+                                    <button type="button" class="file-browse-btn" onclick="document.getElementById('file').click()">
+                                        📁 انتخاب فایل
+                                    </button>
+                                </div>
+                                <div id="fileInfo" class="file-info" style="display: none;">
+                                    <h4>📋 اطلاعات فایل:</h4>
+                                    <div class="file-details">
+                                        <div class="file-detail">
+                                            <span>📄 نام:</span>
+                                            <span id="fileName">-</span>
+                                        </div>
+                                        <div class="file-detail">
+                                            <span>📦 حجم:</span>
+                                            <span id="fileSize">-</span>
+                                        </div>
+                                        <div class="file-detail">
+                                            <span>📝 نوع:</span>
+                                            <span id="fileType">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-large">
+                                <span class="btn-icon">🚀</span>
+                                شروع ایمپورت
+                            </button>
+                        </form>
+
+                        <div id="importProgress" class="progress-section" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">در حال پردازش...</div>
+                        </div>
+                    </div>
+
+                    <!-- اکسپورت -->
+                    <div class="operation-card">
+                        <div class="card-header">
+                            <div class="card-icon">📤</div>
+                            <h3>اکسپورت به اکسل</h3>
+                        </div>
+                        
+                        <div class="card-description">
+                            دریافت گزارش کامل اطلاعات مشتریان در قالب فایل اکسل. این گزارش شامل تمام اطلاعات ثبت شده می‌باشد.
+                        </div>
+
+                        <div style="margin-top: 30px;">
+                            <a href="/api/export-excel" class="btn btn-primary btn-large">
+                                <span class="btn-icon">💾</span>
+                                دانلود گزارش اکسل
+                            </a>
+                        </div>
+
+                        <div class="file-info" style="margin-top: 25px;">
+                            <h4>📊 اطلاعات گزارش:</h4>
+                            <div class="file-details">
+                                <div class="file-detail">
+                                    <span>📋 فرمت:</span>
+                                    <span>Excel (.xlsx)</span>
+                                </div>
+                                <div class="file-detail">
+                                    <span>📁 شامل:</span>
+                                    <span>تمامی اطلاعات مشتریان</span>
+                                </div>
+                                <div class="file-detail">
+                                    <span>🕒 به‌روزرسانی:</span>
+                                    <span>آخرین تغییرات</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- راهنمای استفاده -->
+                <div class="help-section">
+                    <div class="help-header">
+                        <div class="help-icon">❓</div>
+                        <h3>راهنمای استفاده</h3>
+                    </div>
+                    
+                    <div class="help-content">
+                        <div class="help-item">
+                            <div class="help-item-icon">📥</div>
+                            <div class="help-item-content">
+                                <h4>ایمپورت داده‌ها</h4>
+                                <p>فایل اکسل باید شامل ستون‌های: نام مشتری، شماره تماس، تاریخ ورود، کد وسیله، نوع وسیله، قیمت جنس و دستمزد خدمات باشد.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-item">
+                            <div class="help-item-icon">📤</div>
+                            <div class="help-item-content">
+                                <h4>اکسپورت داده‌ها</h4>
+                                <p>گزارش تولید شده شامل تمامی اطلاعات ثبت شده در سیستم می‌باشد و می‌توانید آن را در اکسل ویرایش کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-item">
+                            <div class="help-item-icon">⚠️</div>
+                            <div class="help-item-content">
+                                <h4>ملاحظات مهم</h4>
+                                <p>در هنگام ایمپورت، اطلاعات تکراری بررسی می‌شوند. از فرمت استاندارد تاریخ (1403/01/01) استفاده کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-item">
+                            <div class="help-item-icon">💡</div>
+                            <div class="help-item-content">
+                                <h4>پشتیبانی فرمت</h4>
+                                <p>فایل‌های با پسوند xlsx و xls پشتیبانی می‌شوند. برای بهترین نتیجه از آخرین نسخه اکسل استفاده کنید.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // نمایش اطلاعات فایل
+        function showFileInfo() {
+            const fileInput = document.getElementById('file');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const fileType = document.getElementById('fileType');
+            
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileType.textContent = file.type || 'Excel File';
+                fileInfo.style.display = 'block';
+            } else {
+                fileInfo.style.display = 'none';
+            }
+        }
+
+        // فرمت سایز فایل
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // مدیریت فرم ایمپورت
+        document.getElementById('importForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('file');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const progressSection = document.getElementById('importProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            if (!fileInput.files.length) {
+                showAlert('لطفاً یک فایل انتخاب کنید', 'error');
+                return;
+            }
+
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="btn-icon">⏳</span> در حال ایمپورت...';
+            submitBtn.disabled = true;
+            progressSection.style.display = 'block';
+            
+            // شبیه‌سازی پیشرفت
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `در حال پردازش... ${Math.round(progress)}%`;
+            }, 200);
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch('/api/import-excel', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressText.textContent = 'تکمیل شد!';
+
+                if (result.success) {
+                    showAlert(`✅ ${result.message}`, 'success');
+                    // ریست فرم
+                    setTimeout(() => {
+                        fileInput.value = '';
+                        document.getElementById('fileInfo').style.display = 'none';
+                        progressSection.style.display = 'none';
+                    }, 2000);
+                } else {
+                    showAlert(`❌ ${result.message}`, 'error');
+                }
+            } catch (error) {
+                clearInterval(progressInterval);
+                console.error('Error:', error);
+                showAlert('❌ خطا در ارتباط با سرور', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // نمایش پیام
+        function showAlert(message, type) {
+            const existingAlerts = document.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `custom-alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <div class="alert-content">
+                    <span class="alert-icon">${type === 'success' ? '✅' : '❌'}</span>
+                    <span class="alert-message">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // بارگذاری اولیه
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('صفحه ایمپورت/اکسپورت آماده است');
+        });
+    </script>
+</body>
+<!-- فوتر ساده - کد این قسمت را در انتهای body همه صفحات قرار دهید -->
+<footer class="simple-footer">
+    <div class="footer-content">
+        <div class="footer-text">
+            <span class="version">نسخه ۱.۰ - مخصوص استفاده محلی</span>
+            <span class="separator">|</span>
+            <span class="developer">
+                برنامه نویس: 
+                <a href="mailto:m.vahdatfar@gmail.com" class="developer-link">
+                    محمود وحدت فر
+                </a>
+            </span>
+        </div>
+    </div>
+</footer>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نرم افزار مدیریت تعمیرگاه لوازم خانگی چابک الکترونیک</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 نرم افزار مدیریت تعمیرگاه لوازم خانگی چابک الکترونیک</h1>
+            <nav>
+                <a href="/" class="nav-link active">📊 داشبورد</a>
+                <a href="/add-customer" class="nav-link">👤 ثبت دستگاه جدید</a>
+                <a href="/customers" class="nav-link">📋 لیست مشتریان</a>
+                <a href="/reports" class="nav-link">📈 گزارش‌ها</a>
+                <a href="/import-export" class="nav-link">📤 ایمپورت/اکسپورت</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <!-- آمار سریع -->
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3>کل مشتریان</h3>
+                            <span class="stat-number" id="totalCustomers">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card success">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3>مجموع درآمد (تومان)</h3>
+                            <span class="stat-number" id="totalIncome">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card warning">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <h3>میانگین درآمد (تومان)</h3>
+                            <span class="stat-number" id="averageIncome">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card info">
+                        <div class="stat-icon">🔧</div>
+                        <div class="stat-info">
+                            <h3>تعمیرات فعال</h3>
+                            <span class="stat-number" id="activeRepairs">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- دسترسی سریع -->
+                <div class="quick-actions-section">
+                    <div class="section-header">
+                        <h2>🚀 دسترسی سریع</h2>
+                        <p>عملیات پرکاربرد را سریع‌تر انجام دهید</p>
+                    </div>
+                    <div class="action-cards">
+                        <a href="/add-customer" class="action-card">
+                            <div class="action-icon">➕</div>
+                            <h3> ثبت دستگاه جدید</h3>
+                            <p>ثبت اطلاعات مشتری و دستگاه تعمیری</p>
+                        </a>
+                        
+                        <a href="/customers" class="action-card">
+                            <div class="action-icon">📋</div>
+                            <h3>مدیریت مشتریان</h3>
+                            <p>مشاهده، جستجو و ویرایش مشتریان</p>
+                        </a>
+                        
+                        <a href="/reports" class="action-card">
+                            <div class="action-icon">📈</div>
+                            <h3>گزارش‌گیری</h3>
+                            <p>گزارش‌های مالی و آماری پیشرفته</p>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                <!-- آخرین تعمیرات -->
+                <div class="recent-section">
+                    <div class="section-header">
+                        <h2>🕒 آخرین تعمیرات</h2>
+                        <p>آخرین مشتریان ثبت شده در سیستم</p>
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>نام مشتری</th>
+                                    <th>شماره تماس</th>
+                                    <th>وسیله</th>
+                                    <th>تاریخ ورود</th>
+                                    <th>هزینه کل (تومان)</th>
+                                    <th>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentCustomers">
+                                <!-- با JavaScript پر می‌شود -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal برای نمایش اطلاعات مشتری -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 اطلاعات کامل مشتری</h2>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="customerDetails" class="customer-details">
+                    <!-- اطلاعات مشتری اینجا نمایش داده می‌شود -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // مدیریت Modal
+        const modal = document.getElementById('customerModal');
+        const closeBtn = document.querySelector('.close');
+
+        function openModal() {
+            modal.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        closeBtn.onclick = closeModal;
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // نمایش اطلاعات مشتری
+        async function showCustomerDetails(customerId) {
+            try {
+                const response = await fetch(`/api/customer/${customerId}`);
+                const customer = await response.json();
+
+                if (customer.success) {
+                    displayCustomerDetails(customer.data);
+                    openModal();
+                } else {
+                    alert('خطا در دریافت اطلاعات مشتری');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('خطا در ارتباط با سرور');
+            }
+        }
+
+        // نمایش اطلاعات در Modal
+        function displayCustomerDetails(customer) {
+            const detailsContainer = document.getElementById('customerDetails');
+
+            const formatCurrency = (amount) => {
+                if (!amount) return '۰ تومان';
+                return new Intl.NumberFormat('fa-IR').format(amount) + ' ';
+            };
+
+            const formatDate = (date) => {
+                return date || '-';
+            };
+
+            detailsContainer.innerHTML = `
+                <div class="detail-group">
+                    <span class="detail-label">👤 نام مشتری:</span>
+                    <div class="detail-value">${customer.full_name || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">📞 شماره تماس:</span>
+                    <div class="detail-value">${customer.phone_number || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">📅 تاریخ ورود:</span>
+                    <div class="detail-value">${formatDate(customer.entry_date)}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">📅 تاریخ خروج:</span>
+                    <div class="detail-value ${!customer.exit_date ? 'empty' : ''}">
+                        ${formatDate(customer.exit_date) || 'تعیین نشده'}
+                    </div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">🔧 کد وسیله:</span>
+                    <div class="detail-value">${customer.device_code || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">🏷️ نوع وسیله:</span>
+                    <div class="detail-value">${customer.device_type || '-'}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">💰 قیمت جنس:</span>
+                    <div class="detail-value">${formatCurrency(customer.material_cost)}</div>
+                </div>
+                
+                <div class="detail-group">
+                    <span class="detail-label">💼 دستمزد خدمات:</span>
+                    <div class="detail-value">${formatCurrency(customer.service_cost)}</div>
+                </div>
+                
+                <div class="detail-group" style="grid-column: 1 / -1;">
+                    <span class="detail-label">💵 مجموع هزینه:</span>
+                    <div class="detail-value" style="background: #e8f5e8; color: #2d5016; font-weight: bold;">
+                        ${formatCurrency(customer.total_cost)}
+                    </div>
+                </div>
+                
+                <div class="detail-group" style="grid-column: 1 / -1;">
+                    <span class="detail-label">📝 توضیحات:</span>
+                    <div class="detail-value ${!customer.description ? 'empty' : ''}" style="min-height: 60px;">
+                        ${customer.description || 'توضیحاتی ثبت نشده است'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // بارگذاری آمار و آخرین مشتریان
+// بارگذاری آمار و آخرین مشتریان
+async function loadStats() {
+    try {
+        // آمار اصلی از API stats
+        const statsResponse = await fetch('/api/stats');
+        const statsData = await statsResponse.json();
+        
+        document.getElementById('totalCustomers').textContent = statsData.total_customers || '0';
+        document.getElementById('totalIncome').textContent = formatCurrency(statsData.total_income);
+        document.getElementById('averageIncome').textContent = formatCurrency(statsData.average_income || 0);
+        
+        // برای محاسبه تعمیرات فعال، از recent-customers استفاده می‌کنیم
+        const customersResponse = await fetch('/api/recent-customers');
+        const recentCustomers = await customersResponse.json();
+        
+        let activeRepairsCount = 0;
+        
+        // برای هر مشتری اطلاعات کامل بگیریم
+        for (let customer of recentCustomers) {
+            try {
+                const detailResponse = await fetch(`/api/customer/${customer.id}`);
+                const customerDetail = await detailResponse.json();
+                
+                if (customerDetail.success) {
+                    // اگر exit_date خالی یا null باشه، تعمیر فعاله
+                    if (!customerDetail.data.exit_date || customerDetail.data.exit_date.trim() === '') {
+                        activeRepairsCount++;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading customer details:', error);
+            }
+        }
+        
+        document.getElementById('activeRepairs').textContent = activeRepairsCount;
+        
+        // نمایش آخرین مشتریان در جدول
+        const tbody = document.getElementById('recentCustomers');
+        tbody.innerHTML = '';
+        
+        if (recentCustomers.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        📝 هیچ مشتری‌ای ثبت نشده است
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        for (let customer of recentCustomers) {
+            try {
+                const detailResponse = await fetch(`/api/customer/${customer.id}`);
+                const customerDetail = await detailResponse.json();
+                
+                if (customerDetail.success) {
+                    const fullCustomer = customerDetail.data;
+                    const status = fullCustomer.exit_date && fullCustomer.exit_date.trim() !== '' ? 
+                        '<span class="status-badge completed">✅ تکمیل شده</span>' : 
+                        '<span class="status-badge active">🔄 در حال تعمیر</span>';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <span class="customer-name-link" onclick="showCustomerDetails(${fullCustomer.id})">
+                                ${fullCustomer.full_name}
+                            </span>
+                        </td>
+                        <td>${fullCustomer.phone_number}</td>
+                        <td>
+                            <span class="device-badge">${fullCustomer.device_type}</span>
+                        </td>
+                        <td>${fullCustomer.entry_date}</td>
+                        <td>
+                            <span class="cost-badge">${formatCurrency(fullCustomer.total_cost)}</span>
+                        </td>
+                        <td>${status}</td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            } catch (error) {
+                console.error('Error loading customer details for table:', error);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error loading stats:', error);
+        showAlert('خطا در بارگذاری اطلاعات', 'error');
+    }
+}                
+        
+        function formatCurrency(number) {
+            if (!number) return '۰ تومان';
+            return new Intl.NumberFormat('fa-IR').format(number) + ' ';
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `custom-alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <div class="alert-content">
+                    <span class="alert-icon">${type === 'success' ? '✅' : '❌'}</span>
+                    <span class="alert-message">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadStats);
+    </script>
+</body>
+<!-- فوتر ساده - کد این قسمت را در انتهای body همه صفحات قرار دهید -->
+<footer class="simple-footer">
+    <div class="footer-content">
+        <div class="footer-text">
+            <span class="version">نسخه ۱.۰ - مخصوص استفاده محلی</span>
+            <span class="separator">|</span>
+            <span class="developer">
+                برنامه نویس: 
+                <a href="mailto:m.vahdatfar@gmail.com" class="developer-link">
+                    محمود وحدت فر
+                </a>
+            </span>
+        </div>
+    </div>
+</footer>
+</html>
